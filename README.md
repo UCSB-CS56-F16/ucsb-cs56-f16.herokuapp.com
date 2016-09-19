@@ -1,7 +1,10 @@
 # github-org-utility-webapp
-A webapp that provides several utility functions for managing a github organization
-=======
 
+A webapp that provides several utility functions for managing a github organization
+
+Running on Heroku at: https://github-org-utility-webapp.herokuapp.com/
+
+Heroku logs (only accessible to app maintainers): https://dashboard.heroku.com/apps/github-org-utility-webapp/logs
 
 Requires Java 1.8, and Maven (`mvn` command)
 
