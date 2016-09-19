@@ -40,7 +40,7 @@ import java.util.Collection;
 
    @author pconrad
  */
-public class SparkPac4jGithubOAuthDemo {
+public class GithubOrgUtilityWebapp {
 
     private static final String DEFAULT_ORG_NAME = "UCSB-CS56-Projects";
     
@@ -60,16 +60,24 @@ public class SparkPac4jGithubOAuthDemo {
     private static Map addGithub(Map model, Request request, Response response) {
 	GitHubProfile ghp = ((GitHubProfile)(model.get("ghp")));
 	if (ghp == null) {
-	    System.out.println("No github profile");
+	    // System.out.println("No github profile");
 	    return model;
 	}
 	try {
 	    String accessToken = ghp.getAccessToken();
 	    GitHub gh = null;
+	    String org_name = model.get("org_name").toString();
 	    gh =  GitHub.connect( model.get("userid").toString(), accessToken);
-	    GHOrganization org = gh.getOrganization("UCSB-CS56-Projects");
-	    java.util.Map<java.lang.String,GHRepository> repos = org.getRepositories();
-	    model.put("repos",repos.entrySet());
+	    java.util.Map<java.lang.String,GHRepository> repos = null;
+	    GHOrganization org = gh.getOrganization(org_name);
+	    if (org != null) {
+		repos = org.getRepositories();
+	    }
+	    if (org != null && repos != null) {
+		model.put("repos",repos.entrySet());
+	    } else {
+		model.remove("repos");
+	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
@@ -117,10 +125,10 @@ public class SparkPac4jGithubOAuthDemo {
 	// Set the org name to the old one if it is non-null, non-blank
 	// Unless the requested one form the form is non-null, non-blank.
 	
-	if (old_org_name != null && old_org_name != "")
-	    new_org_name = old_org_name;
-	if (requested_org_name !=null && requested_org_name != "")
-	    new_org_name = requested_org_name;	
+	if (old_org_name != null && !old_org_name.trim().equals(""))
+	    new_org_name = old_org_name.trim();
+	if (requested_org_name !=null && !requested_org_name.trim().equals(""))
+	    new_org_name = requested_org_name.trim();	
 	request.session().attribute("org_name",new_org_name);
 	model.put("org_name",new_org_name);
 	return model;	
