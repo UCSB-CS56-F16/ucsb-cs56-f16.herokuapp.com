@@ -42,6 +42,8 @@ import java.util.Collection;
  */
 public class SparkPac4jGithubOAuthDemo {
 
+    private static final String DEFAULT_ORG_NAME = "UCSB-CS56-Projects";
+    
     private static java.util.List<CommonProfile> getProfiles(final Request request,
 						   final Response response) {
 	final SparkWebContext context = new SparkWebContext(request, response);
@@ -73,6 +75,8 @@ public class SparkPac4jGithubOAuthDemo {
 	}
 	return model;
     }
+
+
     
     private static Map buildModel(Request request, Response response) {
 
@@ -105,7 +109,20 @@ public class SparkPac4jGithubOAuthDemo {
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
+
+	String new_org_name = DEFAULT_ORG_NAME;
+	String requested_org_name = request.queryParams("org_name");
+	String old_org_name = request.session().attribute("org_name");
+
+	// Set the org name to the old one if it is non-null, non-blank
+	// Unless the requested one form the form is non-null, non-blank.
 	
+	if (old_org_name != null && old_org_name != "")
+	    new_org_name = old_org_name;
+	if (requested_org_name !=null && requested_org_name != "")
+	    new_org_name = requested_org_name;	
+	request.session().attribute("org_name",new_org_name);
+	model.put("org_name",new_org_name);
 	return model;	
     }
 
@@ -138,6 +155,7 @@ public class SparkPac4jGithubOAuthDemo {
     }
     
     public static void main(String[] args) {
+
 	
 	HashMap<String,String> envVars =
 	    getNeededEnvVars(new String []{ "GITHUB_CLIENT_ID",
@@ -176,6 +194,15 @@ public class SparkPac4jGithubOAuthDemo {
 	    templateEngine);
 
 	get("/logout", new ApplicationLogoutRoute(config, "/"));
+
+	post("/setorg",
+ 	    (request, response) -> new ModelAndView(buildModel(request,response),"home.mustache"),
+	    templateEngine);
+
+	get("/setorg",
+ 	    (request, response) -> new ModelAndView(buildModel(request,response),"home.mustache"),
+	    templateEngine);
+
 	
 	get("/session",
 	    (request, response) -> new ModelAndView(buildModel(request,response),

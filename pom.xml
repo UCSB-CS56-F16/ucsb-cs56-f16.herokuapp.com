@@ -8,7 +8,7 @@
     </parent>
 
     <groupId>org.pconrad.sparkjava</groupId>
-    <artifactId>sparkjava-pac4j-demo</artifactId>
+    <artifactId>github-org-utility-webapp</artifactId>
     <packaging>jar</packaging>
     <version>1.0</version>
 
