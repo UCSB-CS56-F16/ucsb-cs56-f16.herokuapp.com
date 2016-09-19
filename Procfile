@@ -1,1 +1,1 @@
-web:    java -jar target/spark-template-mustache-2.4-SNAPSHOT.jar
+web:    java -jar target/github-org-utility-webapp-1.0.jar
