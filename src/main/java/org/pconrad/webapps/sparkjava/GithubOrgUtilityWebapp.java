@@ -223,6 +223,11 @@ public class GithubOrgUtilityWebapp {
 			     "github.mustache"),
 	    templateEngine);
 
+	get("/repos-csv",
+	    (request, response) ->
+	    new ModelAndView(addGithub(buildModel(request,response),request,response),
+			     "repos-csv.mustache"),
+	    templateEngine);
 	
 	final org.pac4j.sparkjava.CallbackRoute callback =
 	    new org.pac4j.sparkjava.CallbackRoute(config);
