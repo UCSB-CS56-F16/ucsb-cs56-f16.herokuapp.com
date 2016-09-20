@@ -14,7 +14,7 @@
 
 <ul>
   {{#repos}}
-  <li>{{key}} = {{value}} </li>
+  <li>{{key}} = {{value}}
   </li>
   {{/repos}}
 </ul>
@@ -23,12 +23,11 @@
 <h2>Session contents</h2>
 
 
-<ul>
-  {{#session}}
-  <li>{{key}} = {{value}} </li>
-  </li>
-  {{/session}}
-</ul>
+<pre>
+{{#session}}
+{{key}},{{#value}}{{description}},{{homepage}},,{{/value}}
+{{/session}}
+</pre>
 
 <dl>
   <dt>userid</dt> <dd>{{userid}}</dd>
