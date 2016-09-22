@@ -22,9 +22,9 @@ public class EGradesReader {
 	public static void main(String [] args) {
 
 		String usage = 
-			"Usage: java -cp target/github-org-utility-webapp-1.0.jar org.pconrad.egrades.EGradesReader file.csv CS56 F16";
+			"Usage: java -cp target/github-org-utility-webapp-1.0.jar org.pconrad.egrades.EGradesReader file.csv CS56 F16 github-org";
 		
-		if (args.length != 3) {
+		if (args.length != 4) {
 			System.err.println(usage);
 			System.exit(1);
 		}
@@ -32,7 +32,8 @@ public class EGradesReader {
 		String filename = args[0];
 		String course = args[1];
 		String quarter = args[2];
-		System.err.println("Opening " + filename + " for course " + course + " quarter: " + quarter); 
+		String github_org = args[3];
+		System.err.println("Opening " + filename + " for course " + course + " quarter: " + quarter + " org: " + github_org); 
 
 		ArrayList<Document> roster = new ArrayList<Document>();
 
@@ -73,6 +74,7 @@ public class EGradesReader {
 		Document d = 
 			new Document("course",course)
 			.append("quarter",quarter)
+			.append("org",github_org)
 			.append("roster",roster);
 
 		MongoDatabase database = mc.getDatabase(mcuri.getDatabase());			
