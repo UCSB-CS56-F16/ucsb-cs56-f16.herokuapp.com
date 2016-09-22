@@ -51,6 +51,35 @@
 	  <artifactId>github-api</artifactId>
 	  <version>1.77</version>
 	</dependency>
+
+	<dependency> <!-- for CSV parsing -->
+	  <groupId>org.apache.commons</groupId>
+	  <artifactId>commons-csv</artifactId>
+	  <version>1.2</version>
+	</dependency>
+
+	<dependency> <!--- MongoDB --> <!-- see http://mongodb.github.io/mongo-java-driver/ -->
+          <groupId>org.mongodb</groupId>
+          <artifactId>mongodb-driver</artifactId>
+          <version>3.3.0</version>
+	</dependency>
+
+	<!-- for StringUtils --> <!-- http://commons.apache.org/proper/commons-lang/ -->
+	<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+
+	<dependency>
+	  <groupId>org.apache.commons</groupId>
+	  <artifactId>commons-lang3</artifactId>
+	  <version>3.4</version>
+	</dependency>
+
+	<!-- https://github.com/jayway/JsonPath -->
+	<dependency>
+	  <groupId>com.jayway.jsonpath</groupId>
+	  <artifactId>json-path</artifactId>
+	  <version>2.2.0</version>
+	</dependency>	
+
     </dependencies>
 
     <build>

@@ -1,4 +1,7 @@
 heroku config:set GITHUB_CLIENT_ID=111111111111
 heroku config:set GITHUB_CLIENT_SECRET=2222222222222222222
 heroku config:set GITHUB_CALLBACK_URL=http://localhost:4567/callback
-heroku config:set  APPLICATION_SALT=3333333333333333333
+heroku config:set APPLICATION_SALT=3333333333333333333
+
+heroku config:set MONGO_CLIENT_URI=mongodb://<dbuser>:<dbpassword>@ds035846.mlab.com:35846/github-org-utility-webapp
+

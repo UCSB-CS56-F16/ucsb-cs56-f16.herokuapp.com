@@ -35,6 +35,15 @@ import org.pac4j.oauth.profile.github.GitHubProfile;
 import java.util.Collection;
 
 
+import org.bson.Document;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCollection;
+
+
+import com.jayway.jsonpath.JsonPath;
+
 /**
    Demo of Spark Pac4j with Github OAuth
 
@@ -167,10 +176,31 @@ public class GithubOrgUtilityWebapp {
 	
 	HashMap<String,String> envVars =
 	    getNeededEnvVars(new String []{ "GITHUB_CLIENT_ID",
-					    "GITHUB_CLIENT_SECRET",
-					    "GITHUB_CALLBACK_URL",
-					    "APPLICATION_SALT"});
+										"GITHUB_CLIENT_SECRET",
+										"GITHUB_CALLBACK_URL",
+										"APPLICATION_SALT",
+										"MONGO_CLIENT_URI"});
 	
+
+
+	MongoClientURI mcuri = new MongoClientURI( envVars.get("MONGO_CLIENT_URI"));
+	MongoClient mc = new MongoClient(mcuri);
+	MongoDatabase database = mc.getDatabase(mcuri.getDatabase());			
+	
+	if (mc==null || database==null ) {
+		System.err.println("Mongo DB Authentication failed.  Check value of MONGO_CLIENT_URI env var");
+		System.exit(3);
+	}
+	
+	MongoCollection<Document> admin = database.getCollection("admin");
+	Document myDoc = admin.find().first();
+	String json = myDoc.toJson();
+	System.out.println("json="+json);
+	String admin_github_id = JsonPath.parse(json).read("$.admin_github_id");
+	System.out.println("admin_github_id="+admin_github_id);
+
+
+
 	Spark.staticFileLocation("/static");
 	
 	try {
