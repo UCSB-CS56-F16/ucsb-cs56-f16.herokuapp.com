@@ -17,10 +17,16 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 public class WriteAdmin {
 
 	public static void main(String [] args) {
 
+		Logger logger = LoggerFactory.getLogger(WriteAdmin.class);
+    	logger.info("starting up");
 		String usage = 
 			"Usage: java -cp target/github-org-utility-webapp-1.0.jar org.pconrad.webapps.sparkjava.WriteAdmin admin-github-id";
 		
@@ -30,7 +36,7 @@ public class WriteAdmin {
 		}
 		
 		String admin_github_id = args[0];
-		System.err.println("Admin github id:" + admin_github_id); 
+		logger.info("Admin github id: {}", admin_github_id); 
 
 		java.util.HashMap<String,String> envVars =
 			getNeededEnvVars(new String []{ "MONGO_CLIENT_URI"});

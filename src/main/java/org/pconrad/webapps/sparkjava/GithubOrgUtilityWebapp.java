@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import static java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import spark.ModelAndView;
 
 import spark.Spark;
@@ -173,6 +176,9 @@ public class GithubOrgUtilityWebapp {
     
     public static void main(String[] args) {
 
+    Logger logger = LoggerFactory.getLogger(GithubOrgUtilityWebapp.class);
+    logger.info("GithubOrgUtilityWebapp starting up");
+
 	
 	HashMap<String,String> envVars =
 	    getNeededEnvVars(new String []{ "GITHUB_CLIENT_ID",
@@ -188,12 +194,20 @@ public class GithubOrgUtilityWebapp {
 	MongoDatabase database = mc.getDatabase(mcuri.getDatabase());			
 	
 	if (mc==null || database==null ) {
-		System.err.println("Mongo DB Authentication failed.  Check value of MONGO_CLIENT_URI env var");
+		logger.error("Mongo DB Authentication failed.  Check value of MONGO_CLIENT_URI env var");
 		System.exit(3);
 	}
 	
 	MongoCollection<Document> admin = database.getCollection("admin");
+	if(admin==null){
+		logger.error("Please add admin collection to mongo database");
+		System.exit(3);
+	}
 	Document myDoc = admin.find().first();
+	if(myDoc==null){
+		logger.error("Please add at least one admin user");
+		System.exit(3);
+	}
 	String json = myDoc.toJson();
 	System.out.println("json="+json);
 	String admin_github_id = JsonPath.parse(json).read("$.admin_github_id");
