@@ -85,8 +85,34 @@ public class GithubOrgUtilityWebapp {
 	    if (org != null) {
 		repos = org.getRepositories();
 	    }
-	    if (org != null && repos != null) {
-		model.put("repos",repos.entrySet());
+
+	    java.util.HashMap<String, CS56ProjectRepo> cs56repos = 
+	    	new java.util.HashMap<String, CS56ProjectRepo>();
+
+	 	for (Map.Entry<String, GHRepository> entry : repos.entrySet()) {
+		    String repoName = entry.getKey();
+    		GHRepository repo = entry.getValue();
+
+    		int numOpenIssues = -42; // stub
+
+    		// javadoc for GHRepository: http://github-api.kohsuke.org/apidocs/index.html
+
+    		CS56ProjectRepo pr = new CS56ProjectRepo(
+    				repoName,
+    				repo.getUrl().toString(),
+    				repo.getHtmlUrl().toString(),
+    				repo.getDescription(),
+    				numOpenIssues
+    			);
+
+    		cs56repos.put(repoName,pr);
+
+		}		
+
+
+
+	    if (org != null && cs56repos != null) {
+		model.put("repos",cs56repos.entrySet());
 	    } else {
 		model.remove("repos");
 	    }

@@ -12,20 +12,19 @@
   <dt>Organization</dt> <dd>{{org_name}}</dd>
 </dl>
 
-<ul>
-  {{#repos}}
-  <li>{{key}} = {{value}}
-  </li>
-  {{/repos}}
-</ul>
 
+<pre>
+{{#repos}}
+{{key}},{{#value}}{{name}},{{apiUrl}},{{htmlUrl}},{{description}},{{numOpenIssues}}{{/value}}
+{{/repos}}
+</pre>
 
 <h2>Session contents</h2>
 
 
 <pre>
 {{#session}}
-{{key}},{{#value}}{{description}},{{homepage}},,{{/value}}
+{{key}},{{value}}
 {{/session}}
 </pre>
 
