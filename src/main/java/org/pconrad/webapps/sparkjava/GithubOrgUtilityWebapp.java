@@ -32,6 +32,10 @@ import org.kohsuke.github.GHUser;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GHOrganization;
 
+import org.kohsuke.github.GHIssue;
+import org.kohsuke.github.GHIssueState;
+
+
 
 import org.pac4j.oauth.profile.github.GitHubProfile;
 
@@ -93,7 +97,7 @@ public class GithubOrgUtilityWebapp {
 		    String repoName = entry.getKey();
     		GHRepository repo = entry.getValue();
 
-    		int numOpenIssues = -42; // stub
+			java.util.List<GHIssue> issues = repo.getIssues(GHIssueState.OPEN);
 
     		// javadoc for GHRepository: http://github-api.kohsuke.org/apidocs/index.html
 
@@ -102,7 +106,7 @@ public class GithubOrgUtilityWebapp {
     				repo.getUrl().toString(),
     				repo.getHtmlUrl().toString(),
     				repo.getDescription(),
-    				numOpenIssues
+    				issues.size()
     			);
 
     		cs56repos.put(repoName,pr);
@@ -256,7 +260,8 @@ public class GithubOrgUtilityWebapp {
 				     envVars.get("GITHUB_CLIENT_SECRET"),
 				     envVars.get("GITHUB_CALLBACK_URL"),
 				     envVars.get("APPLICATION_SALT"),
-				     templateEngine).build();
+				     templateEngine,
+				     "repo").build();
 
 	final SecurityFilter
 	    githubFilter = new SecurityFilter(config, "GithubClient", "", "");

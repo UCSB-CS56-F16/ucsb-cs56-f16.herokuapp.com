@@ -26,16 +26,20 @@ public class GithubOAuthConfigFactory implements ConfigFactory {
 
     private final TemplateEngine templateEngine;
 
+    private final String scope;
+
     public GithubOAuthConfigFactory(String github_client_id,
 				    String github_client_secret,
 				    String callback_url,
 				    String salt,
-				    TemplateEngine templateEngine) {
+				    TemplateEngine templateEngine,
+				    String scope) {
 	this.github_client_id = github_client_id;
 	this.github_client_secret = github_client_secret;
 	this.callback_url = callback_url;
 	this.salt = salt;
 	this.templateEngine = templateEngine;	
+	this.scope = scope;
     }
     
     public org.pac4j.core.config.Config build() {
@@ -44,6 +48,10 @@ public class GithubOAuthConfigFactory implements ConfigFactory {
 	    new GitHubClient(github_client_id,
 			     github_client_secret);
 	
+	if (scope != null && scope != "") {
+		githubClient.setScope(scope);
+	}
+
 	Clients clients = new Clients(this.callback_url, githubClient);
 	
 	org.pac4j.core.config.Config config =
