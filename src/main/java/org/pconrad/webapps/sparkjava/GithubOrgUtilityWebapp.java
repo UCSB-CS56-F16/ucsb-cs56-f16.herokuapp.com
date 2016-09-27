@@ -215,7 +215,8 @@ public class GithubOrgUtilityWebapp {
 										"GITHUB_CLIENT_SECRET",
 										"GITHUB_CALLBACK_URL",
 										"APPLICATION_SALT",
-										"MONGO_CLIENT_URI"});
+										"MONGO_CLIENT_URI",
+										"ADMIN_GITHUB_IDS"});
 	
 
 
@@ -228,22 +229,9 @@ public class GithubOrgUtilityWebapp {
 		System.exit(3);
 	}
 	
-	MongoCollection<Document> admin = database.getCollection("admin");
-	if(admin==null){
-		logger.error("Please add admin collection to mongo database");
-		System.exit(3);
-	}
-	Document myDoc = admin.find().first();
-	if(myDoc==null){
-		logger.error("Please add at least one admin user");
-		System.exit(3);
-	}
-	String json = myDoc.toJson();
-	System.out.println("json="+json);
-	String admin_github_id = JsonPath.parse(json).read("$.admin_github_id");
-	System.out.println("admin_github_id="+admin_github_id);
+	String ADMIN_GITHUB_IDS=envVars.get("ADMIN_GITHUB_IDS");
 
-
+	String [] adminGithubIds=ADMIN_GITHUB_IDS.split(",");
 
 	Spark.staticFileLocation("/static");
 	
