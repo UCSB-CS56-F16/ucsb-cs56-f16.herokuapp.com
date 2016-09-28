@@ -1,5 +1,8 @@
 package org.pconrad.webapps.sparkjava;
 
+import javax.servlet.MultipartConfigElement; // for uploading file
+import java.util.Scanner;
+
 import java.util.HashMap;
 import java.util.Map;
 import static java.util.Map.Entry;
@@ -38,6 +41,8 @@ import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHIssue;
 import org.kohsuke.github.GHIssueState;
 
+
+import java.io.InputStream;
 
 
 import org.pac4j.oauth.profile.github.GitHubProfile;
@@ -137,8 +142,6 @@ public class GithubOrgUtilityWebapp {
 		
 		final Map model = new HashMap<String,Object>();
 		Logger logger = LoggerFactory.getLogger(GithubOrgUtilityWebapp.class);
-
-
 		
 		model.put("org_name", GithubOrgUtilityWebapp.GITHUB_ORG);
 
@@ -170,7 +173,7 @@ public class GithubOrgUtilityWebapp {
 				for ( String id : GithubOrgUtilityWebapp.adminGithubIds) {
 					if (githubLogin.equals(id)) {
 						logger.info("Admin user: {}",id);
-						model.put("admin","admin");
+						model.put("admin","admin"); // otherwise ABSENT
 						request.session().attribute("admin","admin");
 						break;
 					}
@@ -302,11 +305,37 @@ public class GithubOrgUtilityWebapp {
 			   }
 		   });
 
+	before("/rosterUpload",
+		   (request, response) -> { 
+			   logger.info("/roster before filter: entering");
+			   String login = request.session().attribute("login");
+			   String session_admin = request.session().attribute("admin");
+			   if ( login==null || login.equals("") ||
+					session_admin == null || !session_admin.equals("admin")) {
+						logger.info("/roster before filter: login: {},  session_admin: {}",
+									login,session_admin);
+				   halt(401,"/roster route requires admin login");
+			   }
+		   });
+
+
 
 	get("/roster",
 	    (request, response) -> new ModelAndView(buildModel(request,response),
 						    "roster.mustache"),
 	    templateEngine);
+
+
+	post("/rosterUpload", (request, response) -> {
+			request.attribute("org.eclipse.jetty.multipartConfig", 
+							  new MultipartConfigElement("/temp"));
+			try (InputStream is = request.raw().getPart("uploaded_file").getInputStream()) {
+					Scanner s = new Scanner(is).useDelimiter("\\A");
+					String result = s.hasNext() ? s.next() : "";
+					logger.info("uploaded file: {}",result);
+				}
+			return "File uploaded";
+		});
 
 	final org.pac4j.sparkjava.CallbackRoute callback =
 	    new org.pac4j.sparkjava.CallbackRoute(config);

@@ -8,7 +8,11 @@
 
 <h2>Upload Roster CSV</h2>
 
-<p>Put form here</p>
+<form method='post' enctype='multipart/form-data' action="/rosterUpload">
+    <input type='file' name='uploaded_file'>
+    <button>Upload Egrades Roster CSV</button>
+</form>
+
 
 {{>footer}}
 </body>
