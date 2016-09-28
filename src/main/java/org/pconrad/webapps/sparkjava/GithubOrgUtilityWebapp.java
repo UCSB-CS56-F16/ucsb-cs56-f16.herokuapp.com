@@ -59,6 +59,8 @@ import com.jayway.jsonpath.JsonPath;
 public class GithubOrgUtilityWebapp {
 
     private static final String DEFAULT_ORG_NAME = "UCSB-CS56-Projects";
+
+	private static String [] adminGithubIds = null;
     
     private static java.util.List<CommonProfile> getProfiles(final Request request,
 						   final Response response) {
@@ -150,11 +152,22 @@ public class GithubOrgUtilityWebapp {
 		map.put("firstProfile", firstProfile);	
 		
 		GitHubProfile ghp = (GitHubProfile) firstProfile;
+
+		String githubLogin = ghp.getUsername();
+
 		model.put("ghp", ghp);
-		model.put("userid",ghp.getUsername());
+		model.put("userid",githubLogin);
 		model.put("name",ghp.getDisplayName());
 		model.put("avatar_url",ghp.getPictureUrl());
 		model.put("email",ghp.getEmail());
+
+		for ( String id : GithubOrgUtilityWebapp.adminGithubIds) {
+			if (githubLogin.equals(id)) {
+				model.put("admin","admin");
+				break;
+			}
+		}
+
 	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -231,7 +244,7 @@ public class GithubOrgUtilityWebapp {
 	
 	String ADMIN_GITHUB_IDS=envVars.get("ADMIN_GITHUB_IDS");
 
-	String [] adminGithubIds=ADMIN_GITHUB_IDS.split(",");
+	GithubOrgUtilityWebapp.adminGithubIds=ADMIN_GITHUB_IDS.split(",");
 
 	Spark.staticFileLocation("/static");
 	

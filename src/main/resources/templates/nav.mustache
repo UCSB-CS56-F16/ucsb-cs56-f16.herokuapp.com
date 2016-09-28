@@ -31,19 +31,13 @@
      
        <ul class="nav navbar-nav navbar-right">
 
-
-
-
-
-
-
 	{{#userid}} 
-        <li class="navbar-text">{{userid}}
+        <li class="navbar-text">{{userid}} {{#admin}}<span class="navbar-admin">&nbsp;({{admin}})</span>{{/admin}}
+</li>
 
           {{#avatar_url}}
-          <img alt="avatar" src="{{avatar_url}}&s=30"  style="padding-left:1em;"/>
+         <li class="navbar-text"><img alt="avatar" src="{{avatar_url}}&s=30"  style="padding-left:1em;"/></li>
           {{/avatar_url}}
-        </li>
 	<li><a href="/logout">Logout</a></li>
 	{{/userid}}
 
