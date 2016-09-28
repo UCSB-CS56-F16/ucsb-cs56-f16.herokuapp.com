@@ -14,6 +14,7 @@ import spark.Spark;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.before;
+import static spark.Spark.halt;
 
 import spark.Request;
 import spark.Response;
@@ -25,6 +26,8 @@ import org.pac4j.sparkjava.ApplicationLogoutRoute;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.sparkjava.SparkWebContext;
+
+import org.pac4j.core.engine.DefaultApplicationLogoutLogic;
 
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GHRepository.Contributor;
@@ -131,49 +134,66 @@ public class GithubOrgUtilityWebapp {
 
     
     private static Map buildModel(Request request, Response response) {
-
-	final Map model = new HashMap<String,Object>();
-	
-	Map<String, Object> map = new HashMap<String, Object>();
-	for (String k: request.session().attributes()) {
-	    Object v = request.session().attribute(k);
-	    map.put(k,v);
-	}
-	
-	model.put("session", map.entrySet());
-
-	java.util.List<CommonProfile> userProfiles = getProfiles(request,response);
-
-	map.put("profiles", userProfiles);
-
-	try {
-	    if (userProfiles.size()>0) {
-		CommonProfile firstProfile = userProfiles.get(0);
-		map.put("firstProfile", firstProfile);	
 		
-		GitHubProfile ghp = (GitHubProfile) firstProfile;
+		final Map model = new HashMap<String,Object>();
+		Logger logger = LoggerFactory.getLogger(GithubOrgUtilityWebapp.class);
 
-		String githubLogin = ghp.getUsername();
 
-		model.put("ghp", ghp);
-		model.put("userid",githubLogin);
-		model.put("name",ghp.getDisplayName());
-		model.put("avatar_url",ghp.getPictureUrl());
-		model.put("email",ghp.getEmail());
+		
+		model.put("org_name", GithubOrgUtilityWebapp.GITHUB_ORG);
 
-		for ( String id : GithubOrgUtilityWebapp.adminGithubIds) {
-			if (githubLogin.equals(id)) {
-				model.put("admin","admin");
-				break;
-			}
+		// THIS BLOCK HANDLES AUTHENTICATION FROM PROFILE
+
+		// First, we assume that we are not authenticated and have no profile
+
+		request.session().attribute("admin","");		
+		request.session().attribute("login","");		
+		java.util.List<CommonProfile> userProfiles = getProfiles(request,response);
+		
+		try {
+			if (userProfiles.size()>0) {
+				CommonProfile firstProfile = userProfiles.get(0);
+				
+				GitHubProfile ghp = (GitHubProfile) firstProfile;
+				
+				String githubLogin = ghp.getUsername();
+				
+				model.put("ghp", ghp);
+				model.put("userid",githubLogin);
+				request.session().attribute("login",githubLogin);
+
+				model.put("name",ghp.getDisplayName());
+				model.put("avatar_url",ghp.getPictureUrl());
+				model.put("email",ghp.getEmail());
+				
+
+				for ( String id : GithubOrgUtilityWebapp.adminGithubIds) {
+					if (githubLogin.equals(id)) {
+						logger.info("Admin user: {}",id);
+						model.put("admin","admin");
+						request.session().attribute("admin","admin");
+						break;
+					}
 		}
 
 	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
+	
 
-	model.put("org_name", GithubOrgUtilityWebapp.GITHUB_ORG);
+
+	// LAST put all session values into the model under the key "session" 
+	// Must be last if what you see in the model is to be an accurate reflection
+	// of all changes to session made in code above.
+
+	Map<String, Object> map = new HashMap<String, Object>();
+	for (String k: request.session().attributes()) {
+		Object v = request.session().attribute(k);
+		map.put(k,v);
+	}
+	model.put("session", map.entrySet());
+
 	return model;	
     }
 
@@ -268,24 +288,26 @@ public class GithubOrgUtilityWebapp {
 	    templateEngine);
 
 	get("/logout", new ApplicationLogoutRoute(config, "/"));
-
-	get("/session",
-	    (request, response) -> new ModelAndView(buildModel(request,response),
-						    "session.mustache"),
-	    templateEngine);
-
-	get("/github",
-	    (request, response) ->
-	    new ModelAndView(addGithub(buildModel(request,response),request,response),
-			     "github.mustache"),
-	    templateEngine);
-
-	get("/repos-csv",
-	    (request, response) ->
-	    new ModelAndView(addGithub(buildModel(request,response),request,response),
-			     "repos-csv.mustache"),
-	    templateEngine);
 	
+	before("/roster",
+		   (request, response) -> { 
+			   logger.info("/roster before filter: entering");
+			   String login = request.session().attribute("login");
+			   String session_admin = request.session().attribute("admin");
+			   if ( login==null || login.equals("") ||
+					session_admin == null || !session_admin.equals("admin")) {
+						logger.info("/roster before filter: login: {},  session_admin: {}",
+									login,session_admin);
+				   halt(401,"/roster route requires admin login");
+			   }
+		   });
+
+
+	get("/roster",
+	    (request, response) -> new ModelAndView(buildModel(request,response),
+						    "roster.mustache"),
+	    templateEngine);
+
 	final org.pac4j.sparkjava.CallbackRoute callback =
 	    new org.pac4j.sparkjava.CallbackRoute(config);
 
