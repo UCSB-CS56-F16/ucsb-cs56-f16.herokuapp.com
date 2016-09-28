@@ -1,5 +1,7 @@
 package org.pconrad.webapps.sparkjava;
 
+import org.pconrad.egrades.Roster;
+
 import javax.servlet.MultipartConfigElement; // for uploading file
 import java.util.Scanner;
 
@@ -185,21 +187,39 @@ public class GithubOrgUtilityWebapp {
 	}
 	
 
+		// IF THIS IS THE ROSTER ROUTE... 
+		//  TODO: Fix this horrible spaghetti code.  Yuck.
 
-	// LAST put all session values into the model under the key "session" 
-	// Must be last if what you see in the model is to be an accurate reflection
-	// of all changes to session made in code above.
+		logger.info("request.contextPath()={}",request.contextPath());
+		logger.info("request.raw().getRequestURI()={}", request.raw().getRequestURI());
 
-	Map<String, Object> map = new HashMap<String, Object>();
-	for (String k: request.session().attributes()) {
-		Object v = request.session().attribute(k);
-		map.put(k,v);
-	}
-	model.put("session", map.entrySet());
+		// SEE: https://bz.apache.org/bugzilla/show_bug.cgi?id=28323
+		// SEE: http://stackoverflow.com/questions/4278083/how-to-get-request-uri-without-context-path
 
-	return model;	
+		String uri = request.raw().getRequestURI();
+		if (uri.equals("/roster")) {
+			logger.info("/roster path... inside buildModel()...");
+
+			Roster roster = new Roster();
+			model.put("roster",roster);
+
+		}
+
+
+		// LAST put all session values into the model under the key "session" 
+		// Must be last if what you see in the model is to be an accurate reflection
+		// of all changes to session made in code above.
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		for (String k: request.session().attributes()) {
+			Object v = request.session().attribute(k);
+			map.put(k,v);
+		}
+		model.put("session", map.entrySet());
+		
+		return model;	
     }
-
+	
     /**
 
        return a HashMap with values of all the environment variables
