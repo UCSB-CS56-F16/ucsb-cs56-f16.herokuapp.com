@@ -17,31 +17,25 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 
+import java.io.InputStream;
+
 public class EGradesReader {
 
-	public static void main(String [] args) {
-
-		String usage = 
-			"Usage: java -cp target/github-org-utility-webapp-1.0.jar org.pconrad.egrades.EGradesReader file.csv CS56 F16 github-org";
+	private Reader reader = null;
+	
+	public EGradesReader(Reader reader) {
+		this.reader = reader;
+	}
+	
+	public void perform() {
 		
-		if (args.length != 4) {
-			System.err.println(usage);
-			System.exit(1);
-		}
-		
-		String filename = args[0];
-		String course = args[1];
-		String quarter = args[2];
-		String github_org = args[3];
-		System.err.println("Opening " + filename + " for course " + course + " quarter: " + quarter + " org: " + github_org); 
-
 		ArrayList<Document> roster = new ArrayList<Document>();
-
+		
 		try {
-			Reader in = new FileReader(filename);			
-			CSVFormat format = CSVFormat.DEFAULT.withHeader().withSkipHeaderRecord();
-			CSVParser records = format.parse(in);
 
+			CSVFormat format = CSVFormat.DEFAULT.withHeader().withSkipHeaderRecord();
+			CSVParser records = format.parse(this.reader);
+			
 			for (CSVRecord record : records) {
 				String perm = record.get("Perm #").trim();
 				String lname = WordUtils.capitalizeFully(record.get("Student Last").trim());
@@ -58,11 +52,9 @@ public class EGradesReader {
 			System.exit(2);
 		}
 			
-
 		java.util.HashMap<String,String> envVars =
 			getNeededEnvVars(new String []{ "MONGO_CLIENT_URI"});
-		
-		
+				
 		MongoClientURI mcuri = new MongoClientURI( envVars.get("MONGO_CLIENT_URI"));
 		MongoClient mc = new MongoClient(mcuri);
 		
@@ -72,14 +64,32 @@ public class EGradesReader {
 		}
 
 		Document d = 
-			new Document("course",course)
-			.append("quarter",quarter)
-			.append("org",github_org)
-			.append("roster",roster);
+			new Document("roster",roster);
 
 		MongoDatabase database = mc.getDatabase(mcuri.getDatabase());			
 		database.getCollection("authorized-emails").insertOne(d);
-	}
+	} // perform
 
+	public static void main(String [] args) {
+		
+		String usage = 
+			"Usage: java -cp target/github-org-utility-webapp-1.0.jar org.pconrad.egrades.EGradesReader file.csv";
+		
+		if (args.length != 1) {
+			System.err.println(usage);
+			System.exit(1);
+		}
+		
+		String filename = args[0];
 
-}
+		try {
+			Reader r = new FileReader(args[0]);
+			EGradesReader egr = new EGradesReader(r);
+			egr.perform();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(3);
+		}
+	} // main
+
+}// class
