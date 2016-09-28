@@ -5,4 +5,5 @@ heroku config:set APPLICATION_SALT=3333333333333333333
 
 heroku config:set MONGO_CLIENT_URI=mongodb://<dbuser>:<dbpassword>@ds035846.mlab.com:35846/github-org-utility-webapp
 
-heroky config:set ADMIN_GITHUB_IDS=pconrad
+heroku config:set ADMIN_GITHUB_IDS=pconrad
+heroku config:set GITHUB_ORG=UCSB-CS56-F16

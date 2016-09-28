@@ -58,7 +58,7 @@ import com.jayway.jsonpath.JsonPath;
  */
 public class GithubOrgUtilityWebapp {
 
-    private static final String DEFAULT_ORG_NAME = "UCSB-CS56-Projects";
+	private static String GITHUB_ORG = null;
 
 	private static String [] adminGithubIds = null;
     
@@ -173,19 +173,7 @@ public class GithubOrgUtilityWebapp {
 	    e.printStackTrace();
 	}
 
-	String new_org_name = DEFAULT_ORG_NAME;
-	String requested_org_name = request.queryParams("org_name");
-	String old_org_name = request.session().attribute("org_name");
-
-	// Set the org name to the old one if it is non-null, non-blank
-	// Unless the requested one form the form is non-null, non-blank.
-	
-	if (old_org_name != null && !old_org_name.trim().equals(""))
-	    new_org_name = old_org_name.trim();
-	if (requested_org_name !=null && !requested_org_name.trim().equals(""))
-	    new_org_name = requested_org_name.trim();	
-	request.session().attribute("org_name",new_org_name);
-	model.put("org_name",new_org_name);
+	model.put("org_name", GithubOrgUtilityWebapp.GITHUB_ORG);
 	return model;	
     }
 
@@ -229,7 +217,8 @@ public class GithubOrgUtilityWebapp {
 										"GITHUB_CALLBACK_URL",
 										"APPLICATION_SALT",
 										"MONGO_CLIENT_URI",
-										"ADMIN_GITHUB_IDS"});
+										"ADMIN_GITHUB_IDS",
+			                            "GITHUB_ORG"});
 	
 
 
@@ -243,6 +232,7 @@ public class GithubOrgUtilityWebapp {
 	}
 	
 	String ADMIN_GITHUB_IDS=envVars.get("ADMIN_GITHUB_IDS");
+	GithubOrgUtilityWebapp.GITHUB_ORG=envVars.get("GITHUB_ORG");
 
 	GithubOrgUtilityWebapp.adminGithubIds=ADMIN_GITHUB_IDS.split(",");
 
@@ -279,15 +269,6 @@ public class GithubOrgUtilityWebapp {
 
 	get("/logout", new ApplicationLogoutRoute(config, "/"));
 
-	post("/setorg",
- 	    (request, response) -> new ModelAndView(buildModel(request,response),"home.mustache"),
-	    templateEngine);
-
-	get("/setorg",
- 	    (request, response) -> new ModelAndView(buildModel(request,response),"home.mustache"),
-	    templateEngine);
-
-	
 	get("/session",
 	    (request, response) -> new ModelAndView(buildModel(request,response),
 						    "session.mustache"),
