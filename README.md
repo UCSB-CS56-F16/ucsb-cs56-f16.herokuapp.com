@@ -1,10 +1,9 @@
-# github-org-utility-webapp
+# github-class-org-signup-utility
  
-A webapp that provides several utility functions for managing a github organization
-
-Running on Heroku at: https://github-org-utility-webapp.herokuapp.com/
-
-Heroku logs (only accessible to app maintainers): https://dashboard.heroku.com/apps/github-org-utility-webapp/logs
+On Heroku at: https://ucsb-cs56-f16.herokuapp.com/ 
+ 
+ 
+Heroku logs (only accessible to app maintainers): https://dashboard.heroku.com/apps/ucsb-cs56-f16/logs
 
 Requires Java 1.8, and Maven (`mvn` command)
 
