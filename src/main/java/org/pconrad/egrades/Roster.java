@@ -9,21 +9,35 @@ import com.mongodb.client.MongoCollection;
 
 
 import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.pconrad.egrades.Student;
 
 public class Roster {
 
-    public String json = null;
+    private String json = null;
 
-    public ArrayList<String> emails = new ArrayList<String>();
+    private HashMap<String,Student> rosterByEmail = new HashMap<String,Student>();
+
+    public boolean isAuthorizedEmail(String emailToCheck) {
+	return rosterByEmail.containsKey(emailToCheck);
+    }
+
+    /** 
+	null if email not found 
+     */
+    public Student getStudentByEmail(String email) {
+	return rosterByEmail.get(email);
+    }
     
     @Override
     public String toString() {
-	return emails.toString();
+	return rosterByEmail.toString();
     }
 
     public Roster(String mongoClientURIString) throws Exception {
@@ -60,15 +74,31 @@ public class Roster {
 	System.out.println("json="+this.json);
 
 
-	net.minidev.json.JSONArray emailsArray = JsonPath.parse(json).read("$.roster.*.email");
+        JSONArray permArray = JsonPath.parse(json).read("$.roster.*.perm");
 
-	java.util.Iterator emailIterator = emailsArray.iterator();
-	while (emailIterator.hasNext()) {
-	    String email = emailIterator.next().toString();
-	    emails.add(email);
+	// THIS IS TERRIBLY INEFFICIENT BAD CODE.  It works, but it is NOT good.
+	// IT is probably O(n^3) or worse in terms of the number of students, and runs
+	// on every hit to the website.   Should be made more efficient, and moved so it runs only
+	// once with the website starts up.
+	
+	java.util.Iterator permIterator = permArray.iterator();
+	while (permIterator.hasNext()) {
+	    String perm = permIterator.next().toString();
+	    JSONArray emailJA = JsonPath.parse(json).read("$.roster[?(@.perm==\"" + perm + "\")].email");
+	    String email = emailJA.get(0).toString();
+	    String fname = extractFieldFromJsonByPerm(json, perm, "fname");
+	    String lname = extractFieldFromJsonByPerm(json, perm, "lname");
+	    Student s = new Student(perm, fname, lname, email);
+	    this.rosterByEmail.put(email,s);
 	}
 
     }
 
+    public static String extractFieldFromJsonByPerm(String json, String perm, String field) {
+	JSONArray ja = JsonPath.parse(json).read("$.roster[?(@.perm==\"" + perm + "\")]." + field );
+	String value = ja.get(0).toString();
+	return value;
+    }
+    
     
 }

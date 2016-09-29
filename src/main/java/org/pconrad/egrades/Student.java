@@ -15,7 +15,12 @@ public class Student {
 	}
 	
 	public String toString() {
-		return perm+","+lname+","+fname+","+email;
+		return "{ " +
+		    "\"perm\" : \"" +  perm + "\"," +
+		    "\"lname\" : \"" + lname + "\"," +
+		    "\"fname\" : \"" + fname + "\"," +
+		    "\"email\" : \"" + email + "\"," +
+		    "}";
 	}
 	
 	public org.bson.Document toDocument() {
