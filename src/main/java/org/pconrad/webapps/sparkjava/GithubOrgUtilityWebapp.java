@@ -67,10 +67,19 @@ import com.jayway.jsonpath.JsonPath;
    @author pconrad
  */
 public class GithubOrgUtilityWebapp {
-
-	private static String GITHUB_ORG = null;
-
-	private static String [] adminGithubIds = null;
+    
+    public static HashMap<String,String> envVars =
+	getNeededEnvVars(new String []{ "GITHUB_CLIENT_ID",
+					"GITHUB_CLIENT_SECRET",
+					"GITHUB_CALLBACK_URL",
+					"APPLICATION_SALT",
+					"MONGO_CLIENT_URI",
+					"ADMIN_GITHUB_IDS",
+					"GITHUB_ORG"});
+    
+    private static String GITHUB_ORG = null;
+    
+    private static String [] adminGithubIds = null;
     
     private static java.util.List<CommonProfile> getProfiles(final Request request,
 						   final Response response) {
@@ -200,8 +209,14 @@ public class GithubOrgUtilityWebapp {
 		if (uri.equals("/roster")) {
 			logger.info("/roster path... inside buildModel()...");
 
-			Roster roster = new Roster();
-			model.put("roster",roster);
+
+			Roster roster = null;
+			try {
+			    roster = new Roster(envVars.get("MONGO_CLIENT_URI"));
+			    model.put("roster",roster);
+			} catch (Exception e) {
+			    e.printStackTrace();
+			}
 
 		}
 
@@ -247,32 +262,11 @@ public class GithubOrgUtilityWebapp {
 	
 	return envVars;
     }
-    
+
     public static void main(String[] args) {
 
-    Logger logger = LoggerFactory.getLogger(GithubOrgUtilityWebapp.class);
-    logger.info("GithubOrgUtilityWebapp starting up");
-
-	
-	HashMap<String,String> envVars =
-	    getNeededEnvVars(new String []{ "GITHUB_CLIENT_ID",
-										"GITHUB_CLIENT_SECRET",
-										"GITHUB_CALLBACK_URL",
-										"APPLICATION_SALT",
-										"MONGO_CLIENT_URI",
-										"ADMIN_GITHUB_IDS",
-			                            "GITHUB_ORG"});
-	
-
-
-	MongoClientURI mcuri = new MongoClientURI( envVars.get("MONGO_CLIENT_URI"));
-	MongoClient mc = new MongoClient(mcuri);
-	MongoDatabase database = mc.getDatabase(mcuri.getDatabase());			
-	
-	if (mc==null || database==null ) {
-		logger.error("Mongo DB Authentication failed.  Check value of MONGO_CLIENT_URI env var");
-		System.exit(3);
-	}
+	Logger logger = LoggerFactory.getLogger(GithubOrgUtilityWebapp.class);
+	logger.info("GithubOrgUtilityWebapp starting up");
 	
 	String ADMIN_GITHUB_IDS=envVars.get("ADMIN_GITHUB_IDS");
 	GithubOrgUtilityWebapp.GITHUB_ORG=envVars.get("GITHUB_ORG");
