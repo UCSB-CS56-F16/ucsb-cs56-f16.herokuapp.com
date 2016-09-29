@@ -1,3 +1,11 @@
+# Copy this file to heroku.sh
+# Then execute with
+#  . heroku.sh
+#
+# OR: If you already have the values set up in heroku, use
+#   ./heroku-read.sh > heroku.sh
+# 
+
 heroku config:set GITHUB_CLIENT_ID=111111111111
 heroku config:set GITHUB_CLIENT_SECRET=2222222222222222222
 heroku config:set GITHUB_CALLBACK_URL=http://localhost:4567/callback
