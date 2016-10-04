@@ -77,163 +77,12 @@ public class GithubOrgUtilityWebapp {
 					"ADMIN_GITHUB_IDS",
 					"GITHUB_ORG"});
     
-    private static String GITHUB_ORG = null;
+    public static String GITHUB_ORG = null;
     
-    private static String [] adminGithubIds = null;
-    
-    private static java.util.List<CommonProfile> getProfiles(final Request request,
-						   final Response response) {
-	final SparkWebContext context = new SparkWebContext(request, response);
-	final ProfileManager manager = new ProfileManager(context);
-	return manager.getAll(true);
-    }    
+    public static String [] adminGithubIds = null;
     
     private final static MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
 
-    /** 
-	add github information to the session
-
-    */
-    private static Map addGithub(Map model, Request request, Response response) {
-	GitHubProfile ghp = ((GitHubProfile)(model.get("ghp")));
-	if (ghp == null) {
-	    // System.out.println("No github profile");
-	    return model;
-	}
-	try {
-	    String accessToken = ghp.getAccessToken();
-	    GitHub gh = null;
-	    String org_name = model.get("org_name").toString();
-	    gh =  GitHub.connect( model.get("userid").toString(), accessToken);
-	    java.util.Map<java.lang.String,GHRepository> repos = null;
-	    GHOrganization org = gh.getOrganization(org_name);
-	    if (org != null) {
-		repos = org.getRepositories();
-	    }
-
-	    java.util.HashMap<String, CS56ProjectRepo> cs56repos = 
-	    	new java.util.HashMap<String, CS56ProjectRepo>();
-
-	 	for (Map.Entry<String, GHRepository> entry : repos.entrySet()) {
-		    String repoName = entry.getKey();
-    		GHRepository repo = entry.getValue();
-
-			java.util.List<GHIssue> issues = repo.getIssues(GHIssueState.OPEN);
-
-    		// javadoc for GHRepository: http://github-api.kohsuke.org/apidocs/index.html
-
-    		CS56ProjectRepo pr = new CS56ProjectRepo(
-    				repoName,
-    				repo.getUrl().toString(),
-    				repo.getHtmlUrl().toString(),
-    				repo.getDescription(),
-    				issues.size()
-    			);
-
-    		cs56repos.put(repoName,pr);
-
-		}		
-
-
-
-	    if (org != null && cs56repos != null) {
-		model.put("repos",cs56repos.entrySet());
-	    } else {
-		model.remove("repos");
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-	return model;
-    }
-
-
-    
-    private static Map buildModel(Request request, Response response) {
-		
-		final Map model = new HashMap<String,Object>();
-		Logger logger = LoggerFactory.getLogger(GithubOrgUtilityWebapp.class);
-		
-		model.put("org_name", GithubOrgUtilityWebapp.GITHUB_ORG);
-
-		// THIS BLOCK HANDLES AUTHENTICATION FROM PROFILE
-
-		// First, we assume that we are not authenticated and have no profile
-
-		request.session().attribute("admin","");		
-		request.session().attribute("login","");		
-		java.util.List<CommonProfile> userProfiles = getProfiles(request,response);
-		
-		try {
-			if (userProfiles.size()>0) {
-				CommonProfile firstProfile = userProfiles.get(0);
-				
-				GitHubProfile ghp = (GitHubProfile) firstProfile;
-				
-				String githubLogin = ghp.getUsername();
-				
-				model.put("ghp", ghp);
-				model.put("userid",githubLogin);
-				request.session().attribute("login",githubLogin);
-
-				model.put("name",ghp.getDisplayName());
-				model.put("avatar_url",ghp.getPictureUrl());
-				model.put("email",ghp.getEmail());
-				
-
-				for ( String id : GithubOrgUtilityWebapp.adminGithubIds) {
-					if (githubLogin.equals(id)) {
-						logger.info("Admin user: {}",id);
-						model.put("admin","admin"); // otherwise ABSENT
-						request.session().attribute("admin","admin");
-						break;
-					}
-		}
-
-	    }
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-	
-
-		// IF THIS IS THE ROSTER ROUTE... 
-		//  TODO: Fix this horrible spaghetti code.  Yuck.
-
-		logger.info("request.contextPath()={}",request.contextPath());
-		logger.info("request.raw().getRequestURI()={}", request.raw().getRequestURI());
-
-		// SEE: https://bz.apache.org/bugzilla/show_bug.cgi?id=28323
-		// SEE: http://stackoverflow.com/questions/4278083/how-to-get-request-uri-without-context-path
-
-		String uri = request.raw().getRequestURI();
-		if (uri.equals("/roster")) {
-			logger.info("/roster path... inside buildModel()...");
-
-
-			Roster roster = null;
-			try {
-			    roster = new Roster(envVars.get("MONGO_CLIENT_URI"));
-			    model.put("roster",roster);
-			} catch (Exception e) {
-			    e.printStackTrace();
-			}
-
-		}
-
-
-		// LAST put all session values into the model under the key "session" 
-		// Must be last if what you see in the model is to be an accurate reflection
-		// of all changes to session made in code above.
-		
-		Map<String, Object> map = new HashMap<String, Object>();
-		for (String k: request.session().attributes()) {
-			Object v = request.session().attribute(k);
-			map.put(k,v);
-		}
-		model.put("session", map.entrySet());
-		
-		return model;	
-    }
 	
     /**
 
@@ -295,16 +144,37 @@ public class GithubOrgUtilityWebapp {
 	    githubFilter = new SecurityFilter(config, "GithubClient", "", "");
 
 	get("/",
-	    (request, response) -> new ModelAndView(buildModel(request,response),"home.mustache"),
+	    (request, response) -> 
+		new ModelAndView(new GithubUtilityModel(envVars,request,response).build(),
+						 "home.mustache"),
 	    templateEngine);
 
 	before("/login", githubFilter);
 
 	get("/login",
-	    (request, response) -> new ModelAndView(buildModel(request,response),"home.mustache"),
+	    (request, response) -> 
+		new ModelAndView(new GithubUtilityModel(envVars,request,response).build(),
+						 "home.mustache"),
 	    templateEngine);
 
 	get("/logout", new ApplicationLogoutRoute(config, "/"));
+
+
+	before("/profile",
+		   (request, response) -> { 
+			   logger.info("/profile before filter: entering");
+			   String login = request.session().attribute("login");
+			   if ( login==null || login.equals("") ) {
+				   halt(401,"/profile route requires user to be logged in");
+			   }
+		   });
+	
+
+	get("/profile",
+	    (request, response) -> new ModelAndView(new GithubUtilityModel(envVars,request,response).build(),
+						    "profile.mustache"),
+	    templateEngine);
+		  
 	
 	before("/roster",
 		   (request, response) -> { 
@@ -335,7 +205,7 @@ public class GithubOrgUtilityWebapp {
 
 
 	get("/roster",
-	    (request, response) -> new ModelAndView(buildModel(request,response),
+	    (request, response) -> new ModelAndView(new GithubUtilityModel(envVars,request,response).build(),
 						    "roster.mustache"),
 	    templateEngine);
 
