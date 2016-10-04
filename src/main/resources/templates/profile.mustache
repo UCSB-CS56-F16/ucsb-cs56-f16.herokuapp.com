@@ -10,6 +10,12 @@
 
 <p>Userid: {{userid}}</p>
 
+<table>
+<tr><th>email<th><th>isPrimary</th><th>isVerified</th></tr>
+{{#github_emails}}
+<tr><td>{{email}}<td><td>{{isPrimary}}</td><td>{{isVerified}}</td></tr>
+{{/github_emails}}
+</table>
 
 
 {{>footer}}

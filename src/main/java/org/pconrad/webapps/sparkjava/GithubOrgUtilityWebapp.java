@@ -138,7 +138,7 @@ public class GithubOrgUtilityWebapp {
 				     envVars.get("GITHUB_CALLBACK_URL"),
 				     envVars.get("APPLICATION_SALT"),
 				     templateEngine,
-				     "repo").build();
+				     "user:email,repo").build();
 
 	final SecurityFilter
 	    githubFilter = new SecurityFilter(config, "GithubClient", "", "");
@@ -171,8 +171,9 @@ public class GithubOrgUtilityWebapp {
 	
 
 	get("/profile",
-	    (request, response) -> new ModelAndView(new GithubUtilityModel(envVars,request,response).build(),
-						    "profile.mustache"),
+	    (request, response) -> 
+		new ModelAndView(new GithubUtilityModel(envVars,request,response).build().addGithubEmails(),
+						 "profile.mustache"),
 	    templateEngine);
 		  
 	

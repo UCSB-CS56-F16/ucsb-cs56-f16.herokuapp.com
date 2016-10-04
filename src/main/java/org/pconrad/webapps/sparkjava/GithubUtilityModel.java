@@ -1,71 +1,41 @@
 package org.pconrad.webapps.sparkjava;
 
-import org.pconrad.egrades.Roster;
-
-import javax.servlet.MultipartConfigElement; // for uploading file
-import java.util.Scanner;
-
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import static java.util.Map.Entry;
+
+import org.kohsuke.github.GHEmail;
+import org.kohsuke.github.GHIssue;
+import org.kohsuke.github.GHIssueState;
+import org.kohsuke.github.GHOrganization;
+import org.kohsuke.github.GHRepository.Contributor;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GHUser;
+import org.kohsuke.github.GitHub;
+
+import org.pac4j.core.config.Config;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.oauth.profile.github.GitHubProfile;
+import org.pac4j.sparkjava.SparkWebContext;
+
+import org.pconrad.egrades.Roster;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import spark.ModelAndView;
-
-import spark.Spark;
-
-import static spark.Spark.get;
-import static spark.Spark.post;
-import static spark.Spark.before;
-import static spark.Spark.halt;
-
 import spark.Request;
 import spark.Response;
-
-import org.pac4j.core.config.Config;
-import org.pac4j.sparkjava.SecurityFilter;
-import org.pac4j.sparkjava.ApplicationLogoutRoute;
-
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.sparkjava.SparkWebContext;
-
-import org.pac4j.core.engine.DefaultApplicationLogoutLogic;
-
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHRepository.Contributor;
-import org.kohsuke.github.GHUser;
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GHOrganization;
-
-import org.kohsuke.github.GHIssue;
-import org.kohsuke.github.GHIssueState;
-
-
-import java.io.InputStream;
-
-
-import org.pac4j.oauth.profile.github.GitHubProfile;
-
-import java.util.Collection;
-
-
-import org.bson.Document;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoCollection;
-
-
-import com.jayway.jsonpath.JsonPath;
+import spark.Spark;
 
 /**
    Demo of Spark Pac4j with Github OAuth
 
    @author pconrad
  */
+
 public class GithubUtilityModel extends HashMap<String,Object> {
     
     public final HashMap<String,String> envVars;
@@ -84,7 +54,10 @@ public class GithubUtilityModel extends HashMap<String,Object> {
 		
     */
 	
-    private GithubUtilityModel addGithub() {
+    public GithubUtilityModel addGithubEmails() {
+
+		Logger logger = LoggerFactory.getLogger(GithubUtilityModel.class);
+
 		GitHubProfile ghp = ((GitHubProfile)(this.get("ghp")));
 		if (ghp == null) {
 			// System.out.println("No github profile");
@@ -93,7 +66,25 @@ public class GithubUtilityModel extends HashMap<String,Object> {
 		try {
 			String accessToken = ghp.getAccessToken();
 			GitHub gh = null;
-			gh =  GitHub.connect( this.get("userid").toString(), accessToken);				
+			
+			gh =  GitHub.connect( this.get("userid").toString(), accessToken);
+
+			/*
+			String thisUserId = this.get("userid").toString();
+			logger.info("Trying to get user with userid {}",thisUserId);
+
+			GHUser thisUser = gh.getUser(thisUserId);
+			logger.info("We have thisUser={}",thisUser.toString());
+
+			String email = thisUser.getEmail();
+			this.put("github_email",email);
+			*/
+
+			java.util.List<GHEmail> emails = gh.getMyself().getEmails2();
+
+			this.put("github_emails",emails);
+
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -158,8 +149,7 @@ public class GithubUtilityModel extends HashMap<String,Object> {
 		String uri = request.raw().getRequestURI();
 		if (uri.equals("/roster")) {
 			logger.info("/roster path... inside buildModel()...");
-			
-			
+						
 			Roster roster = null;
 			try {
 			    roster = new Roster(envVars.get("MONGO_CLIENT_URI"));
