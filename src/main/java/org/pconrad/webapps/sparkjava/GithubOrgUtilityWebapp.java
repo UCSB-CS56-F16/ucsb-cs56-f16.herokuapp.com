@@ -149,15 +149,15 @@ public class GithubOrgUtilityWebapp {
 						 "home.mustache"),
 	    templateEngine);
 
-	before("/login", githubFilter);
+	before("/login/github", githubFilter);
 
-	get("/login",
+	get("/login/github",
 	    (request, response) -> 
 		new ModelAndView(new GithubUtilityModel(envVars,request,response).build(),
 						 "home.mustache"),
 	    templateEngine);
 
-	get("/logout", new ApplicationLogoutRoute(config, "/"));
+	get("/logout/github", new ApplicationLogoutRoute(config, "/"));
 
 
 	before("/profile",
