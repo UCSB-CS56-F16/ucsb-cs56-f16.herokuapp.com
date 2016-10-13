@@ -26,6 +26,13 @@
 
      
        <ul class="nav navbar-nav navbar-right">
+	 {{#google_userid}}
+
+	 {{/google_userid}}
+	 {{^google_userid}}
+	 	<li><a href="/login/google">Google Login</a></li>
+	 {{/google_userid}}
+
 	{{#userid}} 
         <li class="navbar-text">{{userid}} {{#admin}}<span class="navbar-admin">&nbsp;({{admin}})</span>{{/admin}}
 </li>
@@ -33,11 +40,11 @@
           {{#avatar_url}}
          <li class="navbar-text"><img alt="avatar" src="{{avatar_url}}&s=30" height="30" style="padding-left:1em;"/></li>
           {{/avatar_url}}
-	<li><a href="/logout">Logout</a></li>
+	<li><a href="/logout/github">Github Logout</a></li>
 	{{/userid}}
 
 	{{^userid}}
-	<li><a href="/login">Login</a></li>
+	<li><a href="/login/github">Github Login</a></li>
 	{{/userid}}
 
       </ul>

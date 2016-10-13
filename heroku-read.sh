@@ -16,7 +16,7 @@ heroku config:get APPLICATION_SALT --app ucsb-cs56-f16
 printf "heroku config:set MONGO_CLIENT_URI="
 heroku config:get MONGO_CLIENT_URI --app ucsb-cs56-f16
 
-printf "heroku config:set ADMIN_GITHUB_ID="
+printf "heroku config:set ADMIN_GITHUB_IDS="
 heroku config:get ADMIN_GITHUB_IDS --app ucsb-cs56-f16
 
 printf "heroku config:set GITHUB_ORG="
