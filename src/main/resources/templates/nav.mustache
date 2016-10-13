@@ -29,12 +29,14 @@
 
      
        <ul class="nav navbar-nav navbar-right">
-	 {{#google_userid}}
+	 {{#admin}}
+	   {{#google_userid}}
 
-	 {{/google_userid}}
-	 {{^google_userid}}
+	   {{/google_userid}}
+	   {{^google_userid}}
 	 	<li><a href="/login/google">Google Login</a></li>
-	 {{/google_userid}}
+	   {{/google_userid}}
+         {{/admin}}
 
 	{{#userid}} 
         <li class="navbar-text">{{userid}} {{#admin}}<span class="navbar-admin">&nbsp;({{admin}})</span>{{/admin}}
